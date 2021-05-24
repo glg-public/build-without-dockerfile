@@ -44,6 +44,7 @@ runs:
         # grep -R "${{ github.repository }}.*#$branch)" ./github/jobs/hq
       shell: bash
     - run: env
+      shell: bash
     - name: build image
       run: |
         docker run \
