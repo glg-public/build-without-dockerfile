@@ -9,3 +9,4 @@ runs:
   using: composite
   steps:
     - run: gh repo clone glg/ec2.starphleet.jobs.headquarters ./.github/jobs-hq
+      shell: bash
