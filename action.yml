@@ -42,7 +42,7 @@ runs:
 
         # branch=$(cut --fields 3 --delimiter / <<< '${{github.ref}}')
         # grep -R "${{ github.repository }}.*#$branch)" ./github/jobs/hq
-      shell:
+      shell: bash
     - run: env
     - name: build image
       run: |
@@ -58,10 +58,13 @@ runs:
           --name "build" \
           "${BASE_CONTAINER_IMAGE}:${{ inputs.container_version }}" \
           build
+      shell: bash
     - run: |
         docker commit \
           --change 'CMD ["/home/ubuntu/start","web"]' \
           "build" \
           "$ORDERS_NAME"
+      shell: bash
     - run: docker tag "$ORDERS_NAME" "$REPOSITORY_URI:latest"
+      shell: bash
     # - run: docker tag "$ORDERS_NAME" "$REPOSITORY_URI:$IMAGE_TAG"
