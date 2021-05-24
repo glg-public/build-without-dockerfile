@@ -1,0 +1,11 @@
+name: Build and push with dynamic dockerfile
+description: Generates a dockerfile to build legacy apps
+
+defaults:
+  run:
+    shell: bash
+
+runs:
+  using: composite
+  steps:
+    - run: gh repo clone glg/ec2.starphleet.jobs.headquarters ./.github/jobs-hq
