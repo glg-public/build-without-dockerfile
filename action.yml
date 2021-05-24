@@ -37,7 +37,7 @@ runs:
         echo ORDERS_NAME="${{ inputs.orders_name }}" >> $GITHUB_ENV
         echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
 
-        echo BASE_CONTAINER_IMAGE=${{ input.ecr_host }}/github/glg/gds-containerize/main >> $GITHUB_ENV
+        echo BASE_CONTAINER_IMAGE=${{ inputs.ecr_host }}/github/glg/gds-containerize/main >> $GITHUB_ENV
         echo REPOSITORY_URI=${{ inputs.ecr_host }}/github/glg/hq-stale/legacy-job-containerize" >> $GITHUB_ENV
 
         # branch=$(cut --fields 3 --delimiter / <<< '${{github.ref}}')
