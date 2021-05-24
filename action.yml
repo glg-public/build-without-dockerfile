@@ -1,9 +1,15 @@
 name: Build and push with dynamic dockerfile
 description: Generates a dockerfile to build legacy apps
 inputs:
+  access_key_id:
+    required: true
+  secret_access_key:
+    required: true
   container_version:
     default: 436f00aecb934dc4f91ef95b07581c01352282cb
   ecr_host:
+    required: true
+  ecr_uri:
     required: true
   orders_name:
     required: true
@@ -18,7 +24,7 @@ runs:
     - name: Setup environment
       run: |
         echo DEPLOY_SSH_KEY_SECRET_NAME=gds/GLGUSER_PRIVATE_KEY >> $GITHUB_ENV
-        echo HEADQUARTERS_BEANCH=master >> $GITHUB_ENV
+        echo HEADQUARTERS_BRANCH=master >> $GITHUB_ENV
         echo HEADQUARTERS_ORG=glg >> $GITHUB_ENV
         echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters >> $GITHUB_ENV
         echo ORDERS_NAME=${{ inputs.orders_name }} >> $GITHUB_ENV
@@ -29,6 +35,13 @@ runs:
       shell: bash
     - run: env
       shell: bash
+    - name: Login to Docker
+      shell: bash
+      run: |
+        AWS_REGION=$(echo "${{ inputs.ecr_host }}" | cut -f4 -d'.')
+        AWS_ACCESS_KEY_ID="${{inputs.access_key_id}}" \
+        AWS_SECRET_ACCESS_KEY="${{inputs.secret_access_key}}" \
+          aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin ${{ inputs.ecr_uri }}
     - name: build image
       run: |
         docker run \
