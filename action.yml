@@ -1,5 +1,8 @@
 name: Build and push with dynamic dockerfile
 description: Generates a dockerfile to build legacy apps
+inputs:
+  deploy_key:
+    required: true
 
 defaults:
   run:
@@ -8,5 +11,10 @@ defaults:
 runs:
   using: composite
   steps:
-    - run: gh repo clone glg/ec2.starphleet.jobs.headquarters ./.github/jobs-hq
+    - run: |
+        mkdir -p -m 0600 ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        echo '${{ inputs.deploy_key }}' > .github
+
+        ssh-agent bash -c 'echo "${{ inputs.deploy_key }}" | ssh-add -; git clone git@github.com:glg/ec2.starphleet.jobs.headquarters.git ./.github/jobs-hq'
       shell: bash
