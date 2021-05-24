@@ -1,7 +1,11 @@
 name: Build and push with dynamic dockerfile
 description: Generates a dockerfile to build legacy apps
 inputs:
-  deploy_key:
+  container_version:
+    default: 436f00aecb934dc4f91ef95b07581c01352282cb
+  ecr_host:
+    required: true
+  orders_name:
     required: true
 
 defaults:
@@ -11,10 +15,53 @@ defaults:
 runs:
   using: composite
   steps:
-    - run: |
-        mkdir -p -m 0600 ~/.ssh
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-        echo '${{ inputs.deploy_key }}' > .github
+    # - run: |
+        # mkdir -p -m 0600 ~/.ssh
+        # ssh-keyscan github.com >> ~/.ssh/known_hosts
+        # echo '${{ inputs.deploy_key }}' > .github
 
-        ssh-agent bash -c 'echo "${{ inputs.deploy_key }}" | ssh-add -; git clone git@github.com:glg/ec2.starphleet.jobs.headquarters.git ./.github/jobs-hq'
-      shell: bash
+        # ssh-agent bash -c 'echo "${{ inputs.deploy_key }}" | ssh-add -; git clone git@github.com:glg/ec2.starphleet.jobs.headquarters.git ./.github/jobs-hq'
+      # shell: bash
+    # - uses: actions/checkout@v2
+      # with:
+        # repository: glg/ec2.starphleet.jobs.headquarters
+        # path: ./.github/jobs-hq
+        # persist-credentials: false
+        # ssh-key: ${{ secrets.JOBS_DEPLOY_KEY }}
+    - name: Setup environment
+      run: |
+        echo DEPLOY_SSH_KEY_SECRET_NAME=gds/GLGUSER_PRIVATE_KEY >> $GITHUB_ENV
+        echo HEADQUARTERS_BEANCH=master >> $GITHUB_ENV
+        echo HEADQUARTERS_ORG=glg >> $GITHUB_ENV
+        echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters >> $GITHUB_ENV
+        echo ORDERS_NAME="${{ inputs.orders_name }}" >> $GITHUB_ENV
+        echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
+
+        echo BASE_CONTAINER_IMAGE=${{ input.ecr_host }}/github/glg/gds-containerize/main >> $GITHUB_ENV
+        echo REPOSITORY_URI=${{ inputs.ecr_host }}/github/glg/hq-stale/legacy-job-containerize" >> $GITHUB_ENV
+
+        # branch=$(cut --fields 3 --delimiter / <<< '${{github.ref}}')
+        # grep -R "${{ github.repository }}.*#$branch)" ./github/jobs/hq
+      shell:
+    - run: env
+    - name: build image
+      run: |
+        docker run \
+          -i \
+          --env ORDERS_NAME \
+          --env HEADQUARTERS_BRANCH \
+          --env HEADQUARTERS_ORG \
+          --env HEADQUARTERS_REPO \
+          --env DEPLOY_SSH_KEY_SECRET_NAME \
+          --env AWS_CONTAINER_CREDENTIALS_RELATIVE_URI \
+          --init \
+          --name "build" \
+          "${BASE_CONTAINER_IMAGE}:${{ inputs.container_version }}" \
+          build
+    - run: |
+        docker commit \
+          --change 'CMD ["/home/ubuntu/start","web"]' \
+          "build" \
+          "$ORDERS_NAME"
+    - run: docker tag "$ORDERS_NAME" "$REPOSITORY_URI:latest"
+    # - run: docker tag "$ORDERS_NAME" "$REPOSITORY_URI:$IMAGE_TAG"
