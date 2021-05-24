@@ -15,26 +15,13 @@ defaults:
 runs:
   using: composite
   steps:
-    # - run: |
-        # mkdir -p -m 0600 ~/.ssh
-        # ssh-keyscan github.com >> ~/.ssh/known_hosts
-        # echo '${{ inputs.deploy_key }}' > .github
-
-        # ssh-agent bash -c 'echo "${{ inputs.deploy_key }}" | ssh-add -; git clone git@github.com:glg/ec2.starphleet.jobs.headquarters.git ./.github/jobs-hq'
-      # shell: bash
-    # - uses: actions/checkout@v2
-      # with:
-        # repository: glg/ec2.starphleet.jobs.headquarters
-        # path: ./.github/jobs-hq
-        # persist-credentials: false
-        # ssh-key: ${{ secrets.JOBS_DEPLOY_KEY }}
     - name: Setup environment
       run: |
         echo DEPLOY_SSH_KEY_SECRET_NAME=gds/GLGUSER_PRIVATE_KEY >> $GITHUB_ENV
         echo HEADQUARTERS_BEANCH=master >> $GITHUB_ENV
         echo HEADQUARTERS_ORG=glg >> $GITHUB_ENV
         echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters >> $GITHUB_ENV
-        echo ORDERS_NAME="${{ inputs.orders_name }}" >> $GITHUB_ENV
+        echo ORDERS_NAME=${{ inputs.orders_name }} >> $GITHUB_ENV
         echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
 
         echo BASE_CONTAINER_IMAGE=${{ inputs.ecr_host }}/github/glg/gds-containerize/main >> $GITHUB_ENV
