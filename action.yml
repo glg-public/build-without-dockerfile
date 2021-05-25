@@ -24,15 +24,18 @@ runs:
     - name: Setup environment
       run: |
         echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
-        echo AWS_REGION=$(cut --delimiter '.' --fileds 4 <<< ${{ inputs.ecr_uri }}) >> $GITHUB_ENV
+        echo AWS_REGION=$(cut --delimiter '.' --fields 4 <<< ${{ inputs.ecr_uri }}) >> $GITHUB_ENV
         echo DEPLOY_SSH_KEY_SECRET_NAME=gds/GLGUSER_PRIVATE_KEY >> $GITHUB_ENV
         echo HEADQUARTERS_BRANCH=master >> $GITHUB_ENV
         echo HEADQUARTERS_ORG=glg >> $GITHUB_ENV
         echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters >> $GITHUB_ENV
         echo ORDERS_NAME=${{ inputs.orders_name }} >> $GITHUB_ENV
 
-        echo BASE_CONTAINER_IMAGE=${{ inputs.ecr_host }}/github/glg/gds-containerize/main >> $GITHUB_ENV
-        echo REPOSITORY_URI=${{ inputs.ecr_host }}/github/glg/hq-stale/legacy-job-containerize >> $GITHUB_ENV
+        BRANCH=$(cut --delimiter '/' --fields 3 <<< "${{ github.ref }}")
+        ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_uri }}")
+
+        echo BASE_CONTAINER_IMAGE=$ECR_HOST/github/glg/gds-containerize/main >> $GITHUB_ENV
+        echo REPOSITORY_URI=$ECR_HOST/github/${{ github.repository }}/$BRANCH >> $GITHUB_ENV
       shell: bash
     - run: env
       shell: bash
