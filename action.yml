@@ -89,6 +89,8 @@ runs:
           --env HEADQUARTERS_REPO \
           --env DEPLOY_SSH_KEY_SECRET_NAME \
           --env AWS_CONTAINER_CREDENTIALS_RELATIVE_URI \
+          --env AWS_ACCESS_KEY_ID \
+          --env AWS_SECRET_ACCESS_KEY \
           --volume /home/runner/work/hq-stale/hq-stale/secrets:/usr/bin/secrets \
           --init \
           --name "build" \
