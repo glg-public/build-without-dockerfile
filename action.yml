@@ -73,6 +73,7 @@ runs:
 
         chmod +x ./secrets
         ls -l
+        echo $(pwd)/secrets
     - name: build image
       run: |
         docker run \
