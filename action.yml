@@ -23,12 +23,12 @@ runs:
   steps:
     - name: Setup environment
       run: |
+        echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
         echo DEPLOY_SSH_KEY_SECRET_NAME=gds/GLGUSER_PRIVATE_KEY >> $GITHUB_ENV
         echo HEADQUARTERS_BRANCH=master >> $GITHUB_ENV
         echo HEADQUARTERS_ORG=glg >> $GITHUB_ENV
         echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters >> $GITHUB_ENV
         echo ORDERS_NAME=${{ inputs.orders_name }} >> $GITHUB_ENV
-        echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
 
         echo BASE_CONTAINER_IMAGE=${{ inputs.ecr_host }}/github/glg/gds-containerize/main >> $GITHUB_ENV
         echo REPOSITORY_URI=${{ inputs.ecr_host }}/github/glg/hq-stale/legacy-job-containerize >> $GITHUB_ENV
@@ -42,6 +42,36 @@ runs:
         AWS_ACCESS_KEY_ID="${{inputs.access_key_id}}" \
         AWS_SECRET_ACCESS_KEY="${{inputs.secret_access_key}}" \
           aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin ${{ inputs.ecr_uri }}
+    - name: Create secrets override
+      shell: bash
+      run: |
+        cat <<-EOF >> $(pwd)/secrets
+          #! /usr/bin/env bash
+
+          function python() {
+            :
+          }
+
+          function secrets(){
+            >&2 echo "@@@We're all up in your secrets@@@@"
+            SECRET=$(echo "$@" | perl -pe 's|\s*--awsProfile\s+.*?\s+||' | perl -pe 's|\s*--namespace\s+.*?\s+||')
+            THE_VALUE=$(/a-version-of-cli-that-no-one-touches/aws --region us-east-1 secretsmanager get-secret-value --secret-id "us-east-1/${SECRETS_NAMESPACE}/${SECRET}" | jq -r '.SecretString')
+            if [ -z "${THE_VALUE}" ]; then
+              THE_VALUE=$(/a-version-of-cli-that-no-one-touches/aws --region us-east-1 secretsmanager get-secret-value --secret-id "us-east-1/${SECRETS_SHARED_NAMESPACE}/${SECRET}" | jq -r '.SecretString')
+            fi
+            echo "${THE_VALUE}"
+          }
+
+          # fromJson $SMASH_LOGIN password
+          # echo $SFDC_CREDENTIALS | jq -r .username
+          function fromJson() {
+            echo ${1} | jq -r ".${2}"
+          }
+
+          secrets "$@"
+        EOF
+
+        ls -l
     - name: build image
       run: |
         docker run \
