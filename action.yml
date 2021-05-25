@@ -71,7 +71,7 @@ runs:
           secrets "\$@"
         EOF
 
-        ls -l
+        chmod +x ./secrets
     - name: build image
       run: |
         docker run \
