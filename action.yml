@@ -56,6 +56,7 @@ runs:
           }
 
           function secrets(){
+            >&2 echo 'hellow from the other side'
             SECRET=\$(echo "\$@" | perl -pe 's|\s*--awsProfile\s+.*?\s+||' | perl -pe 's|\s*--namespace\s+.*?\s+||')
             THE_VALUE=\$(/a-version-of-cli-that-no-one-touches/aws --region $AWS_REGION secretsmanager get-secret-value --secret-id "$AWS_REGION/\${SECRETS_NAMESPACE}/\${SECRET}" | jq -r '.SecretString')
             if [ -z "\${THE_VALUE}" ]; then
@@ -74,6 +75,7 @@ runs:
         chmod +x ./secrets
         ls -l
         echo $(pwd)/secrets
+        cat secrets
     - name: build image
       run: |
         docker run \
