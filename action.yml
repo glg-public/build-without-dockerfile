@@ -51,6 +51,8 @@ runs:
         cat <<-EOF >> $(pwd)/secrets
           #!/usr/bin/env bash
 
+          >&2 echo 'custom secrets here'
+
           function python() {
             :
           }
