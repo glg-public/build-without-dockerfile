@@ -78,6 +78,7 @@ runs:
         ls -l
         echo $(pwd)/secrets
         cat secrets
+        docker --version
     - name: build image
       run: |
         docker run \
