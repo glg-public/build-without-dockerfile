@@ -26,7 +26,7 @@ runs:
     - name: Setup environment
       run: |
         echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
-        echo AWS_REGION=$(cut --delimiter '.' --fields 4 <<< ${{ inputs.ecr_uri }}) >> $GITHUB_ENV
+        echo AWS_REGION=$(cut --delimiter '.' --fields 4 <<< ${{ inputs.ecr_arn }}) >> $GITHUB_ENV
         echo DEPLOY_SSH_KEY_SECRET_NAME=gds/GLGUSER_PRIVATE_KEY >> $GITHUB_ENV
         echo HEADQUARTERS_BRANCH=master >> $GITHUB_ENV
         echo HEADQUARTERS_ORG=glg >> $GITHUB_ENV
@@ -34,7 +34,7 @@ runs:
         echo ORDERS_NAME=${{ inputs.orders_name }} >> $GITHUB_ENV
 
         BRANCH=$(cut --delimiter '/' --fields 3 <<< "${{ github.ref }}")
-        ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_uri }}")
+        ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_arn }}")
 
         echo BASE_CONTAINER_IMAGE=$ECR_HOST/github/glg/gds-containerize/main >> $GITHUB_ENV
         echo REPOSITORY_URI=${{ inputs.ecr_uri }} >> $GITHUB_ENV
