@@ -37,7 +37,7 @@ runs:
         ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_arn }}")
 
         echo BASE_CONTAINER_IMAGE=$ECR_HOST/github/glg/gds-containerize/main >> $GITHUB_ENV
-        echo REPOSITORY_URI=${{ inputs.ecr_uri }} >> $GITHUB_ENV
+        echo REPOSITORY_ARN=${{ inputs.ecr_arn }} >> $GITHUB_ENV
       shell: bash
     - run: env
       shell: bash
@@ -105,8 +105,8 @@ runs:
           "build" \
           "$ORDERS_NAME"
       shell: bash
-    - run: docker tag "$ORDERS_NAME" "$REPOSITORY_URI:latest"
+    - run: docker tag "$ORDERS_NAME" "$REPOSITORY_ARN:latest"
       shell: bash
-    - run: docker push "$REPOSITORY_URI:latest"
+    - run: docker push "$REPOSITORY_ARN:latest"
       shell: bash
     # - run: docker tag "$ORDERS_NAME" "$REPOSITORY_URI:$IMAGE_TAG"
