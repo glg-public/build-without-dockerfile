@@ -11,6 +11,8 @@ inputs:
     required: true
   ecr_uri:
     required: true
+  ecr_arn:
+    required: true
   orders_name:
     required: true
 
@@ -35,7 +37,7 @@ runs:
         ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_uri }}")
 
         echo BASE_CONTAINER_IMAGE=$ECR_HOST/github/glg/gds-containerize/main >> $GITHUB_ENV
-        echo REPOSITORY_URI=$ECR_HOST/github/${{ github.repository }}/$BRANCH >> $GITHUB_ENV
+        echo REPOSITORY_URI=${{ inputs.ecr_uri }} >> $GITHUB_ENV
       shell: bash
     - run: env
       shell: bash
@@ -44,7 +46,7 @@ runs:
       run: |
         AWS_ACCESS_KEY_ID="${{inputs.access_key_id}}" \
         AWS_SECRET_ACCESS_KEY="${{inputs.secret_access_key}}" \
-          aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin ${{ inputs.ecr_uri }}
+          aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin ${{ inputs.ecr_arn }}
     - name: Create secrets override
       shell: bash
       run: |
