@@ -55,15 +55,14 @@ runs:
           --env AWS_ACCESS_KEY_ID="${{inputs.access_key_id}}" \
           --env AWS_SECRET_ACCESS_KEY="${{inputs.secret_access_key}}" \
           --init \
-          --name "build" \
+          --name build \
           "${BASE_CONTAINER_IMAGE}:${{ inputs.container_version }}" \
           build
       shell: bash
-    - run: docker inspect build | jq --raw-output '.[].Config.Cmd'
-      shell: bash
-    - run: docker commit build $REPOSITORY_ARN:latest
-      shell: bash
     - run: |
-        echo 'before push'
-        docker push "$REPOSITORY_ARN:latest"
+        docker commit \
+          --change 'CMD ["/home/ubuntu/start", "web"]' \
+          build $REPOSITORY_ARN:latest
+      shell: bash
+    - run: docker push $REPOSITORY_ARN:latest
       shell: bash
