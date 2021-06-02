@@ -42,14 +42,6 @@ runs:
         AWS_ACCESS_KEY_ID="${{inputs.access_key_id}}" \
         AWS_SECRET_ACCESS_KEY="${{inputs.secret_access_key}}" \
           aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin ${{ inputs.ecr_arn }}
-    - name: Generate Dockerfile
-      shell: bash
-      run: |
-        cat <<-EOF
-          FROM $BASE_CONTAINER_IMAGE:${{ inputs.container_version }}
-
-          CMD ["/home/ubuntu/start", "web"]
-        EOF
     - name: build image
       run: |
         docker build \
