@@ -61,6 +61,7 @@ runs:
       shell: bash
     - run: |
         echo 'before tag'
+        echo docker tag build "$REPOSITORY_ARN:latest"
         docker tag build "$REPOSITORY_ARN:latest"
       shell: bash
     - run: |
