@@ -7,10 +7,6 @@ inputs:
     required: true
   container_version:
     default: 436f00aecb934dc4f91ef95b07581c01352282cb
-  ecr_host:
-    required: true
-  ecr_uri:
-    required: true
   ecr_arn:
     required: true
   orders_name:
@@ -33,7 +29,6 @@ runs:
         echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters >> $GITHUB_ENV
         echo ORDERS_NAME=${{ inputs.orders_name }} >> $GITHUB_ENV
 
-        BRANCH=$(cut --delimiter '/' --fields 3 <<< "${{ github.ref }}")
         ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_arn }}")
 
         echo BASE_CONTAINER_IMAGE=$ECR_HOST/github/glg/gds-containerize/main >> $GITHUB_ENV
