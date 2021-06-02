@@ -44,7 +44,7 @@ runs:
           aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin ${{ inputs.ecr_arn }}
     - name: build image
       run: |
-        docker build \
+        docker run \
           -i \
           --env ORDERS_NAME \
           --env HEADQUARTERS_BRANCH \
