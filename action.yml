@@ -62,6 +62,8 @@ runs:
     - run: |
         docker commit \
           --change 'CMD ["/home/ubuntu/start", "web"]' \
+          --change 'ENV AWS_ACCESS_KEY_ID=""' \
+          --change 'ENV AWS_SECRET_ACCESS_KEY=""' \
           build $REPOSITORY_ARN:latest
       shell: bash
     - run: docker push $REPOSITORY_ARN:latest
