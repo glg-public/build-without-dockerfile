@@ -59,6 +59,8 @@ runs:
           "${BASE_CONTAINER_IMAGE}:${{ inputs.container_version }}" \
           build
       shell: bash
+    - run: docker inspect build | jq --raw-output '.[].Config.Cmd'
+      shell: bash
     - run: docker commit build $REPOSITORY_ARN:latest
       shell: bash
     - run: |
