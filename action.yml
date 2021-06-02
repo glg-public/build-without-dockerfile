@@ -6,7 +6,7 @@ inputs:
   secret_access_key:
     required: true
   container_version:
-    default: f29a258561b9b0c0495dafa2985e2260ddacca6b
+    default: latest
   ecr_arn:
     required: true
   orders_name:
