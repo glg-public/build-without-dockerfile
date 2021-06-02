@@ -24,9 +24,9 @@ runs:
         echo AWS_CONTAINER_CREDENTIALS_RELATIVE_URI='' >> $GITHUB_ENV
         echo AWS_REGION=$(cut --delimiter '.' --fields 4 <<< ${{ inputs.ecr_arn }}) >> $GITHUB_ENV
         echo DEPLOY_SSH_KEY_SECRET_NAME=gds/GLGUSER_PRIVATE_KEY >> $GITHUB_ENV
-        echo HEADQUARTERS_BRANCH=master >> $GITHUB_ENV
+        echo HEADQUARTERS_BRANCH=main >> $GITHUB_ENV
         echo HEADQUARTERS_ORG=glg >> $GITHUB_ENV
-        echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters >> $GITHUB_ENV
+        echo HEADQUARTERS_REPO=ec2.starphleet.jobs.headquarters.fake >> $GITHUB_ENV
         echo ORDERS_NAME=${{ inputs.orders_name }} >> $GITHUB_ENV
 
         ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_arn }}")
