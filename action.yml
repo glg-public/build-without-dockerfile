@@ -63,5 +63,9 @@ runs:
           --change 'ENV AWS_SECRET_ACCESS_KEY=""' \
           build $REPOSITORY_ARN:latest
       shell: bash
-    - run: docker push $REPOSITORY_ARN:latest
+    - name: Tag and push
+      run: |
+        docker tag $REPOSITORY_ARN:latest $REPOSITORY_ARN:${{ github.sha }}
+        docker push $REPOSITORY_ARN:${{ github.sha }}
+        docker push $REPOSITORY_ARN:latest
       shell: bash
