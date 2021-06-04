@@ -11,6 +11,8 @@ inputs:
     required: true
   orders_name:
     required: true
+  source_repo_sha:
+    required: true
 
 runs:
   using: composite
@@ -65,7 +67,7 @@ runs:
       shell: bash
     - name: Tag and push
       run: |
-        docker tag $REPOSITORY_ARN:latest $REPOSITORY_ARN:${{ github.sha }}
-        docker push $REPOSITORY_ARN:${{ github.sha }}
+        docker tag $REPOSITORY_ARN:latest $REPOSITORY_ARN:${{ inputs.source_repo_sha }}
+        docker push $REPOSITORY_ARN:${{ inputs.source_repo_sha }}
         docker push $REPOSITORY_ARN:latest
       shell: bash
