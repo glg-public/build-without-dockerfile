@@ -6,15 +6,13 @@ inputs:
   secret_access_key:
     required: true
   container_version:
-    default: 436f00aecb934dc4f91ef95b07581c01352282cb
+    default: latest
   ecr_arn:
     required: true
   orders_name:
     required: true
-
-defaults:
-  run:
-    shell: bash
+  source_repo_sha:
+    required: true
 
 runs:
   using: composite
@@ -31,7 +29,7 @@ runs:
 
         ECR_HOST=$(cut --delimiter '/' --fields 1 <<< "${{ inputs.ecr_arn }}")
 
-        echo BASE_CONTAINER_IMAGE=$ECR_HOST/github/glg/gds-containerize/main >> $GITHUB_ENV
+        echo BASE_CONTAINER_IMAGE=$ECR_HOST/github/glg/gds-containerize-sanitized/main >> $GITHUB_ENV
         echo REPOSITORY_ARN=${{ inputs.ecr_arn }} >> $GITHUB_ENV
       shell: bash
     - run: env
@@ -42,40 +40,6 @@ runs:
         AWS_ACCESS_KEY_ID="${{inputs.access_key_id}}" \
         AWS_SECRET_ACCESS_KEY="${{inputs.secret_access_key}}" \
           aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin ${{ inputs.ecr_arn }}
-    - name: Create secrets override
-      shell: bash
-      run: |
-        cat <<-EOF >> $(pwd)/secrets
-          #!/usr/bin/env bash
-
-          >&2 echo 'custom secrets here'
-
-          function python() {
-            :
-          }
-
-          function secrets(){
-            >&2 echo 'hellow from the other side'
-            SECRET=\$(echo "\$@" | perl -pe 's|\s*--awsProfile\s+.*?\s+||' | perl -pe 's|\s*--namespace\s+.*?\s+||')
-            THE_VALUE=\$(/a-version-of-cli-that-no-one-touches/aws --region $AWS_REGION secretsmanager get-secret-value --secret-id "$AWS_REGION/\${SECRETS_NAMESPACE}/\${SECRET}" | jq -r '.SecretString')
-            if [ -z "\${THE_VALUE}" ]; then
-              THE_VALUE=\$(/a-version-of-cli-that-no-one-touches/aws --region $AWS_REGION secretsmanager get-secret-value --secret-id "$AWS_REGION/\${SECRETS_SHARED_NAMESPACE}/\${SECRET}" | jq -r '.SecretString')
-            fi
-            echo "\${THE_VALUE}"
-          }
-
-          function fromJson() {
-            echo \${1} | jq -r ".\${2}"
-          }
-
-          secrets "\$@"
-        EOF
-
-        chmod +x ./secrets
-        ls -l
-        echo $(pwd)/secrets
-        cat secrets
-        docker --version
     - name: build image
       run: |
         docker run \
@@ -88,20 +52,22 @@ runs:
           --env AWS_CONTAINER_CREDENTIALS_RELATIVE_URI \
           --env AWS_ACCESS_KEY_ID="${{inputs.access_key_id}}" \
           --env AWS_SECRET_ACCESS_KEY="${{inputs.secret_access_key}}" \
-          --volume $(pwd)/secrets:/usr/bin/secrets \
           --init \
-          --name "build" \
+          --name build \
           "${BASE_CONTAINER_IMAGE}:${{ inputs.container_version }}" \
           build
       shell: bash
     - run: |
         docker commit \
-          --change 'CMD ["/home/ubuntu/start","web"]' \
-          "build" \
-          "$ORDERS_NAME"
+          --change 'CMD ["/home/ubuntu/start", "web"]' \
+          --change 'ENTRYPOINT ["./entrypoint.sh"]' \
+          --change 'ENV AWS_ACCESS_KEY_ID=""' \
+          --change 'ENV AWS_SECRET_ACCESS_KEY=""' \
+          build $REPOSITORY_ARN:latest
       shell: bash
-    - run: docker tag "$ORDERS_NAME" "$REPOSITORY_ARN:latest"
+    - name: Tag and push
+      run: |
+        docker tag $REPOSITORY_ARN:latest $REPOSITORY_ARN:${{ inputs.source_repo_sha }}
+        docker push $REPOSITORY_ARN:${{ inputs.source_repo_sha }}
+        docker push $REPOSITORY_ARN:latest
       shell: bash
-    - run: docker push "$REPOSITORY_ARN:latest"
-      shell: bash
-    # - run: docker tag "$ORDERS_NAME" "$REPOSITORY_URI:$IMAGE_TAG"
